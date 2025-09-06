@@ -196,7 +196,6 @@ async def get_latest_documents(
     result = []
     for doc in documents:
         owner = await db.users.find_one({"_id": doc["owner_id"]})
-        print(doc)
         result.append(DocumentResponse(
             id=str(doc["_id"]),
             title=doc["title"],
