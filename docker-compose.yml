@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: knowledge_management_db
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: knowledge_management
+    volumes:
+      - mongodb_data:/data/db
+
+  backend:
+    build: ./backend
+    container_name: knowledge_management_api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      MONGODB_URL: mongodb://admin:password123@mongodb:27017/knowledge_management?authSource=admin
+      DATABASE_NAME: knowledge_management
+    depends_on:
+      - mongodb
+    volumes:
+      - ./backend:/app
+      - ./uploads:/app/uploads
+
+volumes:
+  mongodb_data:
