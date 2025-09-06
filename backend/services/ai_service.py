@@ -7,10 +7,10 @@ from PIL import Image
 import pytesseract
 import io
 import re
-
+from dotenv import load_dotenv
+load_dotenv()
 # Configure OpenAI (you can also use other AI services)
-openai.api_key = ""    
-
+openai.api_key = os.getenv("API_KEY")
 
 class AIService:
     @staticmethod
@@ -78,23 +78,19 @@ class AIService:
             if len(cleaned_text) > 4000:  # Limit input to avoid token limits
                 cleaned_text = cleaned_text[:4000] + "..."
 
-            prompt = f"""
-            Please provide a concise summary of the following document content. 
-            The summary should be informative, well-structured, and no more than {max_words} words.
-            Focus on the key points, main topics, and important information.
-
-            Document content:
-            {cleaned_text}
-
-            Summary:
-            """
+            prompt = (
+            f"Tóm tắt văn bản sau thành khoảng 500 từ. "
+            "Yêu cầu: viết rõ ràng, dễ hiểu, bằng tiếng Việt, và trình bày dưới dạng markdown "
+            "(sử dụng tiêu đề, gạch đầu dòng nếu phù hợp).\n\n"
+            f"Văn bản:\n{text}"
+        )
 
             response = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo",
                 messages=[
-                    {"role": "system", "content": "You are a helpful assistant that creates concise, informative summaries of documents."},
-                    {"role": "user", "content": prompt}
-                ],
+                {"role": "system", "content": "Bạn là một trợ lý AI hữu ích, chuyên tóm tắt văn bản."},
+                {"role": "user", "content": prompt},
+            ],
                 max_tokens=600,
                 temperature=0.3
             )
@@ -124,28 +120,21 @@ class AIService:
             if len(cleaned_text) > 3000:
                 cleaned_text = cleaned_text[:3000] + "..."
 
-            prompt = f"""
-            Based on the following document title and content, generate 5-8 relevant tags that would help categorize and find this document.
-            Tags should be:
-            - Single words or short phrases (2-3 words max)
-            - Relevant to the content and topic
-            - Useful for search and categorization
-            - Professional and descriptive
-
-            Title: {title}
-            
-            Content:
-            {cleaned_text}
-
-            Please provide only the tags, separated by commas, without any additional text or explanation.
-            """
+            list_tags = ["ATM", "dịch vụ khách hàng", "sự cố", "tín dụng", "doanh nghiệp", "quy định","onboarding", "IT", "quy trình", "core banking"]
+            prompt = (
+            "Bạn là một hệ thống phân loại văn bản.\n\n"
+            f"Danh sách tag cho phép: {', '.join(list_tags)}\n\n"
+            "Hãy đọc văn bản dưới đây và chọn tối đa 3 tag phù hợp nhất. "
+            "Chỉ trả lời bằng một danh sách tag phân cách bằng dấu phẩy.\n\n"
+            f"Văn bản:\n{text}"
+        )
 
             response = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo",
                 messages=[
-                    {"role": "system", "content": "You are a helpful assistant that generates relevant tags for document categorization."},
-                    {"role": "user", "content": prompt}
-                ],
+                {"role": "system", "content": "Bạn là một trợ lý AI chuyên phân loại văn bản."},
+                {"role": "user", "content": prompt},
+            ],
                 max_tokens=100,
                 temperature=0.3
             )

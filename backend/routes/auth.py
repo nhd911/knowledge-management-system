@@ -40,7 +40,7 @@ async def register(user: UserCreate):
         full_name=created_user["full_name"],
         department=created_user.get("department"),
         group=created_user.get("group"),
-        created_at=created_user["created_at"]
+        # created_at=created_user["created_at"]
     )
 
 @router.post("/login", response_model=Token)

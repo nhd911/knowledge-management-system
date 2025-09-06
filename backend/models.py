@@ -62,7 +62,7 @@ class UserResponse(BaseModel):
     full_name: str
     department: Optional[str]
     group: Optional[str]
-    created_at: datetime
+    # created_at: datetime
 
 # Document Models
 class DocumentBase(BaseModel):

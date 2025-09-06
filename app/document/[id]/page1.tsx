@@ -7,8 +7,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Separator } from "@/components/ui/separator"
-import ReactMarkdown from "react-markdown"
-import remarkGfm from "remark-gfm"
 import {
   Dialog,
   DialogContent,
@@ -459,14 +457,7 @@ export default function DocumentViewPage() {
               </div>
             </CardHeader>
             <CardContent>
-
-              {document.summary && (
-                <div className="prose prose-sm max-w-none mb-4 text-muted-foreground">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {document.summary}
-                  </ReactMarkdown>
-                </div>
-              )}   
+              {document.summary && <p className="text-muted-foreground mb-4">{document.summary}</p>}
               <div className="flex flex-wrap gap-2">
                 {document.tags.map((tag) => (
                   <Badge key={tag} variant="secondary">

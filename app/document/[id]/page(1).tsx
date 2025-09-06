@@ -7,8 +7,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Separator } from "@/components/ui/separator"
-import ReactMarkdown from "react-markdown"
-import remarkGfm from "remark-gfm"
 import {
   Dialog,
   DialogContent,
@@ -35,10 +33,12 @@ import {
   FileText,
   ImageIcon,
   File,
-  Eye,
-  EyeOff,
 } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
+
+// 👉 Markdown render
+import ReactMarkdown from "react-markdown"
+import remarkGfm from "remark-gfm"
 
 interface Document {
   id: string
@@ -55,12 +55,6 @@ interface Document {
   updated_at: string
   average_rating: number
   rating_count: number
-}
-
-interface DocumentText {
-  text: string
-  file_type: string
-  extractable: boolean
 }
 
 export default function DocumentViewPage() {
@@ -81,9 +75,6 @@ export default function DocumentViewPage() {
     tags: "",
     visibility: "",
   })
-  const [documentText, setDocumentText] = useState<DocumentText | null>(null)
-  const [showTextPreview, setShowTextPreview] = useState(false)
-  const [loadingText, setLoadingText] = useState(false)
 
   useEffect(() => {
     if (user && documentId) {
@@ -122,30 +113,6 @@ export default function DocumentViewPage() {
     }
   }
 
-  const fetchDocumentText = async () => {
-    if (!documentId || loadingText) return
-
-    setLoadingText(true)
-    try {
-      const token = localStorage.getItem("token")
-      const response = await fetch(`http://localhost:8000/documents/${documentId}/text`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        setDocumentText(data)
-        setShowTextPreview(true)
-      } else {
-        setError("Failed to extract text from document")
-      }
-    } catch (err) {
-      setError("Failed to extract text from document")
-    } finally {
-      setLoadingText(false)
-    }
-  }
-
   const fetchUserRating = async () => {
     try {
       const token = localStorage.getItem("token")
@@ -176,6 +143,7 @@ export default function DocumentViewPage() {
 
       if (response.ok) {
         setUserRating(rating)
+        // Refresh document to get updated rating
         fetchDocument()
       }
     } catch (err) {
@@ -235,13 +203,14 @@ export default function DocumentViewPage() {
     const token = localStorage.getItem("token")
     const downloadUrl = `http://localhost:8000/documents/${documentId}/download`
 
-    const link = window.document.createElement("a")
+    // Create a temporary link to trigger download
+    const link = document.createElement("a")
     link.href = downloadUrl
     link.setAttribute("Authorization", `Bearer ${token}`)
     link.download = document?.title || "document"
-    window.document.body.appendChild(link)
+    document.body.appendChild(link)
     link.click()
-    window.document.body.removeChild(link)
+    document.body.removeChild(link)
   }
 
   const formatFileSize = (bytes: number) => {
@@ -459,14 +428,14 @@ export default function DocumentViewPage() {
               </div>
             </CardHeader>
             <CardContent>
-
+              {/* ✅ Render Markdown Summary */}
               {document.summary && (
                 <div className="prose prose-sm max-w-none mb-4 text-muted-foreground">
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>
                     {document.summary}
                   </ReactMarkdown>
                 </div>
-              )}   
+              )}              
               <div className="flex flex-wrap gap-2">
                 {document.tags.map((tag) => (
                   <Badge key={tag} variant="secondary">
@@ -481,77 +450,36 @@ export default function DocumentViewPage() {
           {/* File Preview */}
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  {getFileIcon(document.file_type)}
-                  <div>
-                    <CardTitle>File Preview</CardTitle>
-                    <CardDescription>
-                      {document.file_type.toUpperCase()} • {formatFileSize(document.file_size)}
-                    </CardDescription>
-                  </div>
-                </div>
-                {document.file_type !== "image" && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      if (showTextPreview) {
-                        setShowTextPreview(false)
-                      } else {
-                        fetchDocumentText()
-                      }
-                    }}
-                    disabled={loadingText}
-                  >
-                    {loadingText ? (
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2" />
-                    ) : showTextPreview ? (
-                      <EyeOff className="h-4 w-4 mr-2" />
-                    ) : (
-                      <Eye className="h-4 w-4 mr-2" />
-                    )}
-                    {loadingText ? "Loading..." : showTextPreview ? "Hide Text" : "Show Text"}
-                  </Button>
-                )}
-              </div>
+              <CardTitle className="flex items-center gap-2">
+                {getFileIcon(document.file_type)}
+                File Preview
+              </CardTitle>
+              <CardDescription>
+                {document.file_type.toUpperCase()} • {formatFileSize(document.file_size)}
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="border rounded-lg p-8 bg-muted/50">
+              <div className="border rounded-lg p-8 bg-muted/50 text-center">
                 {document.file_type === "image" ? (
                   <img
                     src={`http://localhost:8000/${document.file_path}`}
                     alt={document.title}
                     className="max-w-full max-h-96 mx-auto rounded-lg"
                   />
-                ) : showTextPreview && documentText ? (
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-medium">Document Content</h4>
-                      {!documentText.extractable && <Badge variant="secondary">Limited extraction</Badge>}
-                    </div>
-                    <div className="max-h-96 overflow-y-auto bg-background border rounded-lg p-4">
-                      <pre className="whitespace-pre-wrap text-sm font-mono leading-relaxed">
-                        {documentText.text || "No text content could be extracted from this document."}
-                      </pre>
-                    </div>
-                  </div>
                 ) : document.file_type === "pdf" ? (
-                  <div className="space-y-4 text-center">
+                  <div className="space-y-4">
                     <FileText className="h-16 w-16 mx-auto text-red-500" />
-                    <p className="text-muted-foreground">
-                      PDF preview not available. Click download to view the file or show text to extract content.
-                    </p>
+                    <p className="text-muted-foreground">PDF preview not available. Click download to view the file.</p>
                     <Button onClick={handleDownload}>
                       <Download className="h-4 w-4 mr-2" />
                       Download PDF
                     </Button>
                   </div>
                 ) : (
-                  <div className="space-y-4 text-center">
+                  <div className="space-y-4">
                     <File className="h-16 w-16 mx-auto text-gray-500" />
                     <p className="text-muted-foreground">
-                      File preview not available. Click download to view the file or show text to extract content.
+                      File preview not available. Click download to view the file.
                     </p>
                     <Button onClick={handleDownload}>
                       <Download className="h-4 w-4 mr-2" />
@@ -580,6 +508,7 @@ export default function DocumentViewPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => {
+                      // Remove rating logic would go here
                       setUserRating(null)
                     }}
                   >

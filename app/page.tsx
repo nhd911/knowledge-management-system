@@ -149,7 +149,13 @@ export default function HomePage() {
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
-                        <p className="text-muted-foreground leading-relaxed">{doc.summary || "No summary available"}</p>
+                        <p className="text-muted-foreground leading-relaxed">
+                          {doc.summary
+                            ? (doc.summary.length > 500
+                              ? doc.summary.slice(0, 500) + "..."
+                              : doc.summary)
+                            : "No summary available"}
+                        </p>
                         <div className="flex items-center justify-between">
                           <div className="flex gap-2 flex-wrap">
                             {doc.tags.slice(0, 2).map((tag) => (
@@ -209,7 +215,13 @@ export default function HomePage() {
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
-                        <p className="text-muted-foreground leading-relaxed">{doc.summary || "No summary available"}</p>
+                      <p className="text-muted-foreground leading-relaxed">
+                          {doc.summary
+                            ? (doc.summary.length > 500
+                              ? doc.summary.slice(0, 500) + "..."
+                              : doc.summary)
+                            : "No summary available"}
+                        </p>
                         <div className="flex items-center justify-between">
                           <div className="flex gap-2 flex-wrap">
                             {doc.tags.slice(0, 2).map((tag) => (
@@ -265,7 +277,13 @@ export default function HomePage() {
                         <CardDescription className="text-base">by You • {formatDate(doc.created_at)}</CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
-                        <p className="text-muted-foreground leading-relaxed">{doc.summary || "No summary available"}</p>
+                      <p className="text-muted-foreground leading-relaxed">
+                          {doc.summary
+                            ? (doc.summary.length > 500
+                              ? doc.summary.slice(0, 500) + "..."
+                              : doc.summary)
+                            : "No summary available"}
+                        </p>
                         <div className="flex items-center justify-between">
                           <div className="flex gap-2 flex-wrap">
                             {doc.tags.slice(0, 2).map((tag) => (

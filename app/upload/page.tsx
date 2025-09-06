@@ -86,17 +86,15 @@ export default function UploadPage() {
 
     try {
       const token = localStorage.getItem("token")
-      const formDataToSend = new FormData()
-      formDataToSend.append("file", file)
-      formDataToSend.append("title", formData.title || file.name)
+      const uploadFormData = new FormData()
+      uploadFormData.append("file", file)
+      uploadFormData.append("title", formData.title || file.name)
 
       const response = await fetch("http://localhost:8000/ai/analyze-file", {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
-        body: formDataToSend,
+        body: uploadFormData,
       })
-
-      console.log(response);
 
       if (response.ok) {
         const analysis = await response.json()
