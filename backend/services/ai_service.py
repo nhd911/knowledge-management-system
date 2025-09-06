@@ -9,7 +9,8 @@ import io
 import re
 
 # Configure OpenAI (you can also use other AI services)
-openai.api_key = ""
+openai.api_key = ""    
+
 
 class AIService:
     @staticmethod

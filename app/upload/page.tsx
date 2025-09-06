@@ -86,15 +86,17 @@ export default function UploadPage() {
 
     try {
       const token = localStorage.getItem("token")
-      const formData = new FormData()
-      formData.append("file", file)
-      formData.append("title", formData.title || file.name)
+      const formDataToSend = new FormData()
+      formDataToSend.append("file", file)
+      formDataToSend.append("title", formData.title || file.name)
 
       const response = await fetch("http://localhost:8000/ai/analyze-file", {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
-        body: formData,
+        body: formDataToSend,
       })
+
+      console.log(response);
 
       if (response.ok) {
         const analysis = await response.json()
@@ -196,44 +198,52 @@ export default function UploadPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b">
-        <div className="container mx-auto px-4 py-4">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30">
+      <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-50">
+        <div className="container mx-auto px-6 py-6">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" onClick={() => router.push("/")}>
+            <Button variant="ghost" onClick={() => router.push("/")} className="hover:bg-accent/10">
               ← Back to Home
             </Button>
-            <h1 className="text-2xl font-bold">Upload Document</h1>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              Upload Document
+            </h1>
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 max-w-2xl">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Upload className="h-5 w-5" />
+      <main className="container mx-auto px-6 py-12 max-w-4xl">
+        <Card className="border-2 shadow-xl bg-card/80 backdrop-blur-sm">
+          <CardHeader className="space-y-4 pb-8">
+            <CardTitle className="flex items-center gap-3 text-2xl">
+              <div className="p-2 bg-accent/10 rounded-lg">
+                <Upload className="h-6 w-6 text-accent" />
+              </div>
               Share Your Knowledge
             </CardTitle>
-            <CardDescription>Upload a document to share with your team or organization</CardDescription>
+            <CardDescription className="text-lg text-muted-foreground">
+              Upload a document to share with your team or organization
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-8">
               {error && (
-                <Alert variant="destructive">
-                  <AlertDescription>{error}</AlertDescription>
+                <Alert variant="destructive" className="border-2">
+                  <AlertDescription className="text-base">{error}</AlertDescription>
                 </Alert>
               )}
 
               {/* File Upload */}
-              <div className="space-y-2">
-                <Label htmlFor="file">Document File *</Label>
+              <div className="space-y-3">
+                <Label htmlFor="file" className="text-base font-medium">
+                  Document File *
+                </Label>
                 {!file ? (
-                  <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center">
-                    <Upload className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                    <div className="space-y-2">
-                      <p className="text-sm text-muted-foreground">Drag and drop your file here, or click to browse</p>
-                      <p className="text-xs text-muted-foreground">Supports PDF, DOC, DOCX, PNG, JPG, GIF (max 10MB)</p>
+                  <div className="border-2 border-dashed border-accent/30 rounded-xl p-12 text-center bg-accent/5 hover:bg-accent/10 transition-colors">
+                    <Upload className="h-16 w-16 mx-auto text-accent mb-6" />
+                    <div className="space-y-4">
+                      <p className="text-lg text-muted-foreground">Drag and drop your file here, or click to browse</p>
+                      <p className="text-sm text-muted-foreground">Supports PDF, DOC, DOCX, PNG, JPG, GIF (max 10MB)</p>
                       <Input
                         id="file"
                         type="file"
@@ -241,23 +251,37 @@ export default function UploadPage() {
                         accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.gif"
                         className="hidden"
                       />
-                      <Button type="button" variant="outline" onClick={() => document.getElementById("file")?.click()}>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="lg"
+                        onClick={() => document.getElementById("file")?.click()}
+                        className="border-2"
+                      >
                         Choose File
                       </Button>
                     </div>
                   </div>
                 ) : (
-                  <div className="border rounded-lg p-4 bg-muted/50">
+                  <div className="border-2 rounded-xl p-6 bg-card">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <FileText className="h-8 w-8 text-primary" />
+                      <div className="flex items-center gap-4">
+                        <div className="p-3 bg-accent/10 rounded-lg">
+                          <FileText className="h-8 w-8 text-accent" />
+                        </div>
                         <div>
-                          <p className="font-medium">{file.name}</p>
-                          <p className="text-sm text-muted-foreground">{formatFileSize(file.size)}</p>
+                          <p className="font-medium text-lg">{file.name}</p>
+                          <p className="text-muted-foreground">{formatFileSize(file.size)}</p>
                         </div>
                       </div>
-                      <div className="flex gap-2">
-                        <Button type="button" variant="outline" size="sm" onClick={analyzeWithAI} disabled={aiLoading}>
+                      <div className="flex gap-3">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={analyzeWithAI}
+                          disabled={aiLoading}
+                          className="border-2 bg-transparent"
+                        >
                           {aiLoading ? (
                             <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                           ) : (
@@ -265,7 +289,12 @@ export default function UploadPage() {
                           )}
                           {aiLoading ? "Analyzing..." : "AI Analyze"}
                         </Button>
-                        <Button type="button" variant="ghost" size="sm" onClick={removeFile}>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          onClick={removeFile}
+                          className="hover:bg-destructive/10 hover:text-destructive"
+                        >
                           <X className="h-4 w-4" />
                         </Button>
                       </div>
@@ -276,30 +305,38 @@ export default function UploadPage() {
 
               {/* AI Suggestions */}
               {showAiSuggestions && aiAnalysis && (
-                <Card className="border-primary/20 bg-primary/5">
+                <Card className="border-2 border-accent/30 bg-gradient-to-br from-accent/5 to-accent/10">
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-lg">
-                      <Brain className="h-5 w-5 text-primary" />
+                    <CardTitle className="flex items-center gap-3 text-xl">
+                      <div className="p-2 bg-accent/20 rounded-lg">
+                        <Brain className="h-6 w-6 text-accent" />
+                      </div>
                       AI Suggestions
                     </CardTitle>
-                    <CardDescription>AI has analyzed your document and generated suggestions</CardDescription>
+                    <CardDescription className="text-base">
+                      AI has analyzed your document and generated suggestions
+                    </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent className="space-y-6">
                     {aiAnalysis.summary && (
-                      <div>
-                        <Label className="text-sm font-medium">Suggested Summary:</Label>
-                        <p className="text-sm text-muted-foreground mt-1 p-3 bg-background rounded border">
+                      <div className="space-y-2">
+                        <Label className="text-base font-medium">Suggested Summary:</Label>
+                        <p className="text-muted-foreground p-4 bg-background rounded-lg border-2 leading-relaxed">
                           {aiAnalysis.summary}
                         </p>
                       </div>
                     )}
 
                     {aiAnalysis.tags.length > 0 && (
-                      <div>
-                        <Label className="text-sm font-medium">Suggested Tags:</Label>
-                        <div className="flex flex-wrap gap-2 mt-2">
+                      <div className="space-y-3">
+                        <Label className="text-base font-medium">Suggested Tags:</Label>
+                        <div className="flex flex-wrap gap-2">
                           {aiAnalysis.tags.map((tag, index) => (
-                            <Badge key={index} variant="secondary">
+                            <Badge
+                              key={index}
+                              variant="secondary"
+                              className="bg-accent/20 text-accent hover:bg-accent/30 text-sm px-3 py-1"
+                            >
                               {tag}
                             </Badge>
                           ))}
@@ -308,20 +345,25 @@ export default function UploadPage() {
                     )}
 
                     {aiAnalysis.extracted_text_preview && (
-                      <div>
-                        <Label className="text-sm font-medium">Extracted Content Preview:</Label>
-                        <p className="text-xs text-muted-foreground mt-1 p-3 bg-background rounded border max-h-20 overflow-y-auto">
+                      <div className="space-y-2">
+                        <Label className="text-base font-medium">Extracted Content Preview:</Label>
+                        <p className="text-sm text-muted-foreground p-4 bg-background rounded-lg border-2 max-h-32 overflow-y-auto leading-relaxed">
                           {aiAnalysis.extracted_text_preview}
                         </p>
                       </div>
                     )}
 
-                    <div className="flex gap-2">
-                      <Button type="button" onClick={applySuggestions} size="sm">
+                    <div className="flex gap-3 pt-2">
+                      <Button type="button" onClick={applySuggestions} className="bg-accent hover:bg-accent/90">
                         <Wand2 className="h-4 w-4 mr-2" />
                         Apply Suggestions
                       </Button>
-                      <Button type="button" variant="outline" onClick={() => setShowAiSuggestions(false)} size="sm">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setShowAiSuggestions(false)}
+                        className="border-2"
+                      >
                         Dismiss
                       </Button>
                     </div>
@@ -329,81 +371,101 @@ export default function UploadPage() {
                 </Card>
               )}
 
-              {/* Title */}
-              <div className="space-y-2">
-                <Label htmlFor="title">Title *</Label>
-                <Input
-                  id="title"
-                  value={formData.title}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
-                  placeholder="Enter document title"
-                  required
-                />
+              {/* Form Fields */}
+              <div className="grid gap-8 md:grid-cols-2">
+                <div className="space-y-3">
+                  <Label htmlFor="title" className="text-base font-medium">
+                    Title *
+                  </Label>
+                  <Input
+                    id="title"
+                    value={formData.title}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
+                    placeholder="Enter document title"
+                    className="h-12 text-base border-2 focus:border-accent"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-3">
+                  <Label htmlFor="visibility" className="text-base font-medium">
+                    Visibility *
+                  </Label>
+                  <Select
+                    value={formData.visibility}
+                    onValueChange={(value) => setFormData((prev) => ({ ...prev, visibility: value }))}
+                  >
+                    <SelectTrigger className="h-12 text-base border-2 focus:border-accent">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {VISIBILITY_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value} className="text-base">
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
-              {/* Summary */}
-              <div className="space-y-2">
-                <Label htmlFor="summary">Summary</Label>
+              <div className="space-y-3">
+                <Label htmlFor="summary" className="text-base font-medium">
+                  Summary
+                </Label>
                 <Textarea
                   id="summary"
                   value={formData.summary}
                   onChange={(e) => setFormData((prev) => ({ ...prev, summary: e.target.value }))}
                   placeholder="Brief description of the document content (optional)"
-                  rows={3}
+                  rows={4}
                   maxLength={500}
+                  className="text-base border-2 focus:border-accent resize-none"
                 />
-                <p className="text-xs text-muted-foreground">{formData.summary.length}/500 characters</p>
+                <p className="text-sm text-muted-foreground">{formData.summary.length}/500 characters</p>
               </div>
 
-              {/* Tags */}
-              <div className="space-y-2">
-                <Label htmlFor="tags">Tags</Label>
+              <div className="space-y-3">
+                <Label htmlFor="tags" className="text-base font-medium">
+                  Tags
+                </Label>
                 <Input
                   id="tags"
                   value={formData.tags}
                   onChange={(e) => setFormData((prev) => ({ ...prev, tags: e.target.value }))}
                   placeholder="Enter tags separated by commas (e.g., react, tutorial, frontend)"
+                  className="h-12 text-base border-2 focus:border-accent"
                 />
-                <p className="text-xs text-muted-foreground">Use tags to help others find your document</p>
-              </div>
-
-              {/* Visibility */}
-              <div className="space-y-2">
-                <Label htmlFor="visibility">Visibility *</Label>
-                <Select
-                  value={formData.visibility}
-                  onValueChange={(value) => setFormData((prev) => ({ ...prev, visibility: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {VISIBILITY_OPTIONS.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <p className="text-sm text-muted-foreground">Use tags to help others find your document</p>
               </div>
 
               {/* Upload Progress */}
               {loading && uploadProgress > 0 && (
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Uploading...</span>
-                    <span>{Math.round(uploadProgress)}%</span>
+                <div className="space-y-3">
+                  <div className="flex justify-between text-base">
+                    <span className="font-medium">Uploading...</span>
+                    <span className="font-medium">{Math.round(uploadProgress)}%</span>
                   </div>
-                  <Progress value={uploadProgress} />
+                  <Progress value={uploadProgress} className="h-3" />
                 </div>
               )}
 
-              {/* Submit Button */}
-              <div className="flex gap-4">
-                <Button type="button" variant="outline" onClick={() => router.push("/")} disabled={loading}>
+              {/* Submit Buttons */}
+              <div className="flex gap-4 pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => router.push("/")}
+                  disabled={loading}
+                  className="border-2 h-12 text-base"
+                >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={loading || !file}>
+                <Button
+                  type="submit"
+                  disabled={loading || !file}
+                  className="bg-accent hover:bg-accent/90 h-12 text-base font-medium"
+                >
                   {loading ? "Uploading..." : "Upload Document"}
                 </Button>
               </div>
